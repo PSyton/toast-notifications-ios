@@ -11,39 +11,27 @@
 
 static iToastSettings *sharedSettings = nil;
 
-@interface iToast(private)
-
-- (iToast *) settings;
-
-@end
-
-
 @implementation iToast
 
-
-- (id) initWithText:(NSString *) tex{
+-(id)initWithText:(NSString *)aText
+{
 	if (self = [super init]) {
-		text = [tex copy];
+		text = [aText copy];
 	}
 	
 	return self;
 }
 
-- (void) show{
+-(void)show
+{
 	[self show:iToastTypeNone];
 }
 
-- (void) show:(iToastType) type{
+- (void)show:(iToastType)type{
 	
-	iToastSettings *theSettings = _settings;
+	UIImage *image = [[self settings].images valueForKey:[NSString stringWithFormat:@"%i", type]];
 	
-	if (!theSettings) {
-		theSettings = [iToastSettings getSharedSettings];
-	}
-	
-	UIImage *image = [theSettings.images valueForKey:[NSString stringWithFormat:@"%i", type]];
-	
-	UIFont *font = [UIFont systemFontOfSize:16];
+	UIFont *font = [UIFont systemFontOfSize:[self settings].fontSize];
 	CGSize textSize = [text sizeWithFont:font constrainedToSize:CGSizeMake(280, 60)];
 	
 	UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, textSize.width + 5, textSize.height + 5)];
@@ -73,7 +61,7 @@ static iToastSettings *sharedSettings = nil;
 		[imageView release];
 	}
 	
-	v.backgroundColor = [self theSettings].backgroundColor;
+	v.backgroundColor = [self settings].backgroundColor;
 	v.layer.cornerRadius = 5;
 	
 	UIWindow *window = [[[UIApplication sharedApplication] windows] objectAtIndex:0];
@@ -85,14 +73,14 @@ static iToastSettings *sharedSettings = nil;
 	switch (orientation) {
 		case UIDeviceOrientationPortrait:
 		{
-			if (theSettings.gravity == iToastGravityTop) {
+			if ([self settings].gravity == iToastGravityTop) {
 				point = CGPointMake(window.frame.size.width / 2, 45);
-			} else if (theSettings.gravity == iToastGravityBottom) {
+			} else if ([self settings].gravity == iToastGravityBottom) {
 				point = CGPointMake(window.frame.size.width / 2, window.frame.size.height - 45);
-			} else if (theSettings.gravity == iToastGravityCenter) {
+			} else if ([self settings].gravity == iToastGravityCenter) {
 				point = CGPointMake(window.frame.size.width/2, window.frame.size.height/2);
 			} else {
-				point = theSettings.postition;
+				point = [self settings].postition;
 			}
 			
 			point = CGPointMake(point.x + offsetLeft, point.y + offsetTop);
@@ -105,15 +93,15 @@ static iToastSettings *sharedSettings = nil;
 			float width = window.frame.size.width;
 			float height = window.frame.size.height;
 			
-			if (theSettings.gravity == iToastGravityTop) {
+			if ([self settings].gravity == iToastGravityTop) {
 				point = CGPointMake(width / 2, height - 45);
-			} else if (theSettings.gravity == iToastGravityBottom) {
+			} else if ([self settings].gravity == iToastGravityBottom) {
 				point = CGPointMake(width / 2, 45);
-			} else if (theSettings.gravity == iToastGravityCenter) {
+			} else if ([self settings].gravity == iToastGravityCenter) {
 				point = CGPointMake(width/2, height/2);
 			} else {
 				// TODO : handle this case
-				point = theSettings.postition;
+				point = [self settings].postition;
 			}
 			
 			point = CGPointMake(point.x - offsetLeft, point.y - offsetTop);
@@ -123,15 +111,15 @@ static iToastSettings *sharedSettings = nil;
 		{
 			v.transform = CGAffineTransformMakeRotation(M_PI/2); //rotation in radians
 			
-			if (theSettings.gravity == iToastGravityTop) {
+			if ([self settings].gravity == iToastGravityTop) {
 				point = CGPointMake(window.frame.size.width - 45, window.frame.size.height / 2);
-			} else if (theSettings.gravity == iToastGravityBottom) {
+			} else if ([self settings].gravity == iToastGravityBottom) {
 				point = CGPointMake(45,window.frame.size.height / 2);
-			} else if (theSettings.gravity == iToastGravityCenter) {
+			} else if ([self settings].gravity == iToastGravityCenter) {
 				point = CGPointMake(window.frame.size.width/2, window.frame.size.height/2);
 			} else {
 				// TODO : handle this case
-				point = theSettings.postition;
+				point = [self settings].postition;
 			}
 			
 			point = CGPointMake(point.x - offsetTop, point.y - offsetLeft);
@@ -141,15 +129,15 @@ static iToastSettings *sharedSettings = nil;
 		{
 			v.transform = CGAffineTransformMakeRotation(-M_PI/2);
 			
-			if (theSettings.gravity == iToastGravityTop) {
+			if ([self settings].gravity == iToastGravityTop) {
 				point = CGPointMake(45, window.frame.size.height / 2);
-			} else if (theSettings.gravity == iToastGravityBottom) {
+			} else if ([self settings].gravity == iToastGravityBottom) {
 				point = CGPointMake(window.frame.size.width - 45, window.frame.size.height/2);
-			} else if (theSettings.gravity == iToastGravityCenter) {
+			} else if ([self settings].gravity == iToastGravityCenter) {
 				point = CGPointMake(window.frame.size.width/2, window.frame.size.height/2);
 			} else {
 				// TODO : handle this case
-				point = theSettings.postition;
+				point = [self settings].postition;
 			}
 			
 			point = CGPointMake(point.x + offsetTop, point.y + offsetLeft);
@@ -161,7 +149,7 @@ static iToastSettings *sharedSettings = nil;
 
 	v.center = point;
 	
-	NSTimer *timer1 = [NSTimer timerWithTimeInterval:((float)theSettings.duration)/1000 
+	NSTimer *timer1 = [NSTimer timerWithTimeInterval:((float)[self settings].duration)/1000
 											 target:self selector:@selector(hideToast:) 
 										   userInfo:nil repeats:NO];
 	[[NSRunLoop mainRunLoop] addTimer:timer1 forMode:NSDefaultRunLoopMode];
@@ -173,9 +161,10 @@ static iToastSettings *sharedSettings = nil;
 	[v addTarget:self action:@selector(hideToast:) forControlEvents:UIControlEventTouchDown];
 }
 
-- (void) hideToast:(NSTimer*)theTimer{
+-(void)hideToast:(NSTimer*)theTimer
+{
 	[UIView beginAnimations:nil context:NULL];
-	view.alpha = 0;
+	view.alpha = 0.0f;
 	[UIView commitAnimations];
 	
 	NSTimer *timer2 = [NSTimer timerWithTimeInterval:500 
@@ -184,106 +173,123 @@ static iToastSettings *sharedSettings = nil;
 	[[NSRunLoop mainRunLoop] addTimer:timer2 forMode:NSDefaultRunLoopMode];
 }
 
-- (void) removeToast:(NSTimer*)theTimer{
+-(void)removeToast:(NSTimer*)theTimer
+{
 	[view removeFromSuperview];
 }
 
 
-+ (iToast *) makeText:(NSString *) _text{
-	iToast *toast = [[[iToast alloc] initWithText:_text] autorelease];
-	
-	return toast;
++(iToast*)toastWithText:(NSString*)aText
+{
+	return [[[iToast alloc] initWithText:aText] autorelease];
 }
 
 
-- (iToast *) setDuration:(NSInteger ) duration{
-	[self theSettings].duration = duration;
+-(iToast*)setDuration:(NSInteger)duration
+{
+	[self settings].duration = duration;
 	return self;
 }
 
-- (iToast *) setGravity:(iToastGravity) gravity 
-			 offsetLeft:(NSInteger) left
-			  offsetTop:(NSInteger) top{
-	[self theSettings].gravity = gravity;
+-(iToast*)setGravity:(iToastGravity)gravity offsetLeft:(NSInteger)left offsetTop:(NSInteger)top
+{
+	[self settings].gravity = gravity;
 	offsetLeft = left;
 	offsetTop = top;
 	return self;
 }
 
-- (iToast *) setGravity:(iToastGravity) gravity{
-	[self theSettings].gravity = gravity;
+-(iToast*)setGravity:(iToastGravity)gravity
+{
+	[self settings].gravity = gravity;
 	return self;
 }
 
-- (iToast *) setPostion:(CGPoint) _position{
-	[self theSettings].postition = CGPointMake(_position.x, _position.y);
-	
+-(iToast*)setPostion:(CGPoint)aPosition
+{
+	[self settings].postition = CGPointMake(aPosition.x, aPosition.y);
 	return self;
 }
 
-- (iToast *) setBackgroundColor:(UIColor *) bgColor{
-        [self theSettings].backgroundColor = bgColor;
-        return self;
+-(iToast*)setBackgroundColor:(UIColor*)bgColor
+{
+  [self settings].backgroundColor = bgColor;
+  return self;
 }
 
--(iToastSettings *) theSettings{
+-(iToast*)setFontSize:(CGFloat)fontSize
+{
+  [self settings].fontSize = fontSize;
+  return self;
+}
+
++(iToastSettings*)sharedSettings
+{
+  if (!sharedSettings) {
+		sharedSettings = [iToastSettings new];
+	}
+
+	return sharedSettings;
+}
+
+
+-(iToastSettings*)settings
+{
 	if (!_settings) {
-		_settings = [[iToastSettings getSharedSettings] copy];
+		_settings = [[iToast sharedSettings] copy];
 	}
 	
 	return _settings;
 }
-
 @end
 
+@interface iToastSettings(Private)
+@property(nonatomic) NSDictionary* images;
+@end
 
 @implementation iToastSettings
-@synthesize duration;
-@synthesize gravity;
-@synthesize postition;
-@synthesize images;
-@synthesize backgroundColor;
 
-- (void) setImage:(UIImage *) img forType:(iToastType) type{
+-(id)init
+{
+  self = [super init];
+	if (self)
+  {
+		self.gravity = iToastGravityCenter;
+		self.duration = iToastDurationNormal;
+    self.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent: 0.7f];
+    self.postition = CGPointMake(0.0f, 0.0f);
+    self.fontSize = 12.0;
+	}
+	return self;
+
+}
+
+-(void)setImage:(UIImage*)img forType:(iToastType)type
+{
 	if (type == iToastTypeNone) {
 		// This should not be used, internal use only (to force no image)
 		return;
 	}
 	
-	if (!images) {
-		images = [[NSMutableDictionary alloc] initWithCapacity:4];
+	if (!self.images) {
+		self.images = [[NSMutableDictionary alloc] initWithCapacity:4];
 	}
 	
 	if (img) {
 		NSString *key = [NSString stringWithFormat:@"%i", type];
-		[images setValue:img forKey:key];
+		[self.images setValue:img forKey:key];
 	}
 }
 
-
-+ (iToastSettings *) getSharedSettings{
-	if (!sharedSettings) {
-		sharedSettings = [iToastSettings new];
-		sharedSettings.gravity = iToastGravityCenter;
-		sharedSettings.duration = iToastDurationShort;
-	}
-	
-	return sharedSettings;
-	
-}
-
-- (id) copyWithZone:(NSZone *)zone{
+-(id)copyWithZone:(NSZone*)zone
+{
 	iToastSettings *copy = [iToastSettings new];
 	copy.gravity = self.gravity;
 	copy.duration = self.duration;
 	copy.postition = self.postition;
-	
-	NSArray *keys = [self.images allKeys];
-	
-	for (NSString *key in keys){
-		[copy setImage:[images valueForKey:key] forType:[key intValue]];
-	}
-	
+  copy.backgroundColor = self.backgroundColor;
+  if (self.images)
+    copy.images = [self.images copy];
 	return copy;
 }
 

@@ -36,52 +36,38 @@ typedef enum iToastType {
 	iToastSettings *_settings;
 	NSInteger offsetLeft;
 	NSInteger offsetTop;
-	
 	NSTimer *timer;
-	
 	UIView *view;
 	NSString *text;
 }
 
-- (void) show;
-- (void) show:(iToastType) type;
-- (iToast *) setDuration:(NSInteger ) duration;
-- (iToast *) setGravity:(iToastGravity) gravity 
-			 offsetLeft:(NSInteger) left
-			 offsetTop:(NSInteger) top;
-- (iToast *) setGravity:(iToastGravity) gravity;
-- (iToast *) setPostion:(CGPoint) position;
-- (iToast *) setBackgroundColor:(UIColor) bgColor;
++(iToast*)toastWithText:(NSString*)text;
 
-+ (iToast *) makeText:(NSString *) text;
+-(void)show;
+-(void)show:(iToastType) type;
+-(iToast*)setDuration:(NSInteger ) duration;
+-(iToast*)setGravity:(iToastGravity)gravity offsetLeft:(NSInteger)left offsetTop:(NSInteger)top;
+-(iToast*)setGravity:(iToastGravity) gravity;
+-(iToast*)setPostion:(CGPoint) position;
+-(iToast*)setBackgroundColor:(UIColor*) bgColor;
+-(iToast*)setFontSize:(CGFloat)fontSize;
 
--(iToastSettings *) theSettings;
-
++(iToastSettings*)sharedSettings;
+-(iToastSettings*)settings;
 @end
 
 
 
 @interface iToastSettings : NSObject<NSCopying>{
-	NSInteger duration;
-	iToastGravity gravity;
-	CGPoint postition;
-	iToastType toastType;
-        UIColor *backgroundColor;
-	
-	NSDictionary *images;
-	
-	BOOL positionIsSet;
 }
-
 
 @property(assign) NSInteger duration;
 @property(assign) iToastGravity gravity;
 @property(assign) CGPoint postition;
-@property(assign) UIColor *backgroundColor;
-@property(readonly) NSDictionary *images;
+@property(nonatomic, strong) UIColor* backgroundColor;
+@property(readonly) NSDictionary* images;
+@property(assign) CGFloat fontSize;
 
+-(void)setImage:(UIImage*)img forType:(iToastType)type;
 
-- (void) setImage:(UIImage *)img forType:(iToastType) type;
-+ (iToastSettings *) getSharedSettings;
-						  
 @end
